@@ -1,5 +1,5 @@
 const dev = require('./config/dev');
-var mysql      = require('mysql');
+var mysql = require('mysql');
 var conn = mysql.createConnection({
    host     : dev.mysql.host,
    port     : dev.mysql.port,
