@@ -3,7 +3,9 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const dev = require('./config/dev');
 var mysql = require('mysql');
+const request = require('request');
 const { connect } = require('http2');
+
 var conn = mysql.createConnection({
    host     : dev.mysql.host,
    port     : dev.mysql.port,
@@ -170,6 +172,32 @@ app.post('/topic/add', (req,res)=>{
             res.redirect('/topic');            
         }
     })
+});
+
+
+
+app.get('/youtube/:search', (req,res) => {
+    var url = "https://developers.google.com/apis-explorer/#p/youtube/v3/youtube.search.list?";
+    var optionParams = {
+        key: dev.youtube.key,
+        q: req.params.search,
+        part: "snippet",
+        order: "viewCount",
+        type: "video",
+        videoDefinition: "high",
+        maxResults: 5
+      };
+    
+    for(var option in optionParams) {
+      url += option+"="+optionParams[option]+"&";
+    }
+    url = url.substr(0, url.length-1);
+
+    request.get(url, (err, res, body)=>{
+        console.log('===> YOUTUBE API call');
+        var data = JSON.stringify(res);
+        console.log(data);
+      });
 });
 
 app.listen(3000,()=>{
