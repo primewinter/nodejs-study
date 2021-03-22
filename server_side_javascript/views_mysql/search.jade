@@ -4,9 +4,9 @@ html(lang="en")
         meta(charset="UTF-8")
         meta(http-equiv="X-UA-Compatible", content="IE=edge")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
-        title View
-    body 
-        h1 
+        title Document
+    body
+         h1 
             a(href='/topic') Sever Side JavaScript
         ul
             each topic in topics
@@ -14,24 +14,8 @@ html(lang="en")
                     a(href='/topic/'+topic.id)=topic.title
 
         article 
-            if topic
-                h2=topic.title
-                =topic.description
-                div= 'by '+topic.author
-            else
-                h2 Welcome
-                | This is server side javascript tutorial.
-        article 
             form(action="/youtube", method="post")  
                 p
                     input(type="text", name="keyword", placeholder="keyword")
                 p 
                     input(type="submit")
-        ul
-            li 
-                a(href='/topic/add') add
-            if topic 
-                li 
-                    a(href='/topic/'+topic.id+'/edit') edit
-                li 
-                    a(href='/topic/'+topic.id+'/delete') delete

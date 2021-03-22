@@ -4,7 +4,11 @@ const fs = require('fs');
 const dev = require('./config/dev');
 var mysql = require('mysql');
 const request = require('request');
+var Youtube = require('youtube-node');
+var youtube = new Youtube();
+
 const { connect } = require('http2');
+const { resolveNaptr } = require('dns');
 
 var conn = mysql.createConnection({
    host     : dev.mysql.host,
@@ -14,6 +18,7 @@ var conn = mysql.createConnection({
    database : dev.mysql.database
 });
 conn.connect();
+youtube.setKey(dev.youtube.key);
 const app = express();
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -176,28 +181,33 @@ app.post('/topic/add', (req,res)=>{
 
 
 
-app.get('/youtube/:search', (req,res) => {
-    var url = "https://developers.google.com/apis-explorer/#p/youtube/v3/youtube.search.list?";
-    var optionParams = {
-        key: dev.youtube.key,
-        q: req.params.search,
-        part: "snippet",
-        order: "viewCount",
-        type: "video",
-        videoDefinition: "high",
-        maxResults: 5
-      };
-    
-    for(var option in optionParams) {
-      url += option+"="+optionParams[option]+"&";
-    }
-    url = url.substr(0, url.length-1);
+app.post('/youtube', (req,res) => {
+    youtube.addParam('order', 'relevance'); // 관련성 순서
+    youtube.addParam('type', 'video'); // 타입 지정 
+    youtube.addParam('part', 'snippet');
+    youtube.addParam('regionCode', 'KR');
+    youtube.addParam('safeSearch', 'moderate');
 
-    request.get(url, (err, res, body)=>{
-        console.log('===> YOUTUBE API call');
-        var data = JSON.stringify(res);
-        console.log(data);
-      });
+    var limit = 5;
+    var word = req.body.keyword;
+
+    youtube.search(word, limit, function (err, result) { // 검색 실행 
+        if (err) { 
+            console.log(err); 
+            return; 
+        } // 에러일 경우 에러공지하고 빠져나감 
+        //console.log(JSON.stringify(result, null, 2)); // 받아온 전체 리스트 출력 
+        var items = result["items"]; // 결과 중 items 항목만 가져옴 
+        for (var i in items) { var it = items[i]; 
+            var title = it["snippet"]["title"]; 
+            var video_id = it["id"]["videoId"]; 
+            var url = "https://www.youtube.com/watch?v=" + video_id; 
+            console.log("제목 : " + title); 
+            console.log("URL : " + url); 
+            console.log("-----------"); 
+        } 
+    });
+
 });
 
 app.listen(3000,()=>{
